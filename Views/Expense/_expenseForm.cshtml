@@ -1,0 +1,58 @@
+﻿
+@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@using Microsoft.AspNetCore.Identity;
+@inject SignInManager<IdentityUser> SignInManager
+
+@model ExpenseManager.Models.ExpenseAttributes
+<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.css" rel="stylesheet">
+
+
+<div>
+    <div class="row">
+        <div class="col-md-8">
+            @if (SignInManager.IsSignedIn(User))
+            {
+
+                <form id="expenseForm">
+                    <input type="hidden" asp-for="ItemId" />
+                <div class="form-group">
+                    <label asp-for="ItemName" class="control-label"></label>
+                    <input asp-for="ItemName" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label asp-for="Category" class="control-label"></label>
+                    <select asp-for="Category" class="form-control">
+                        <option value="">-- Select Category --</option>
+                        <option value="Food">Food</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Travel">Travel</option>
+                        <option value="Health">Health</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Amount" class="control-label"></label>
+                    <input asp-for="Amount" class="form-control" />
+                </div>
+                <div class="form-group" id="calender-container">
+                    <label asp-for="ExpenseDate" class="control-label"></label>
+                    <div class="input-group date">
+                        <input asp-for="ExpenseDate" type="text" class="form-control"><span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                    </div>
+                </div>
+                <div class="form-group" style="padding:2% 0 0 0">
+                    <button type="button" id="btnSubmit" class="btn btn-block btn-outline-info">Save</button>
+                </div>
+                </form>
+            }
+            else
+            {
+                <h4>Please login to Add Expense.
+                    Login Id: kshitij@gmail.com, Password: Kshitij@123</h4>
+<a asp-controller="account" asp-action="login" class="btn btn-primary">Login</a>
+            }
+        </div>
+    </div>
+</div>

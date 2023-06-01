@@ -1,0 +1,263 @@
+﻿@using Microsoft.AspNetCore.Identity;
+@inject SignInManager<IdentityUser> SignInManager
+@model IEnumerable<ExpenseManager.Models.ExpenseAttributes>
+
+@{
+    ViewData["Title"] ="Personal Expense Manager";
+}
+<script src="https://kit.fontawesome.com/b5e70f813f.js" crossorigin="anonymous"></script>
+<link href="~/lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet" />
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.css" rel="stylesheet">
+<link href="~/css/styles.css" rel="stylesheet" />
+<body style="background-color: #121111">
+
+    <div style="text-align:center;">
+
+    <marquee  direction="left" >To Add/Delete/Edit any Expense, Please Login with Login Id: kshitij@gmail.com & Password: Kshitij@123</marquee>
+    </div>
+  
+<div class="row">
+   <div class="col-10" style="text-align:center">
+    <h2 style="text-align:center; padding:2% 0 2% 22%;">Expense Manager</h2>
+</div>
+    <div style="text-align:center; padding:2% 0;" class="col-2">
+        @if (SignInManager.IsSignedIn(User) == false)
+        {
+            <a asp-controller="account" asp-action="login" class="btn btn-primary btn-sm"><i class="fa fa-sign-in" aria-hidden="true"></i></a>
+        }
+        else
+        {
+            <a asp-controller="account" asp-action="logout" class="btn btn-danger btn-sm"><i class="fa fa-sign-out" aria-hidden="true"></i></a>
+        }
+</div>
+
+
+</div>
+  <div >
+    <div class="row" style="text-align:center;padding:0 15%">
+        <div class="col">
+            <button class="btn btn-outline-danger" style="padding:1% 1%"onclick="AddEditExpenses(0)">Add Expense</button>
+
+
+                <button class="btn btn-outline-success" style="padding:1% 1%" onclick="ReportExpense()">Expense Report</button>
+        </div>
+
+    </div>
+    <div class="row " style="padding:2% 15%">
+        <div class="search-box   ">
+            <input type="text" id="myInput" class="form-control" placeholder="Search&hellip;">
+        </div>
+    </div>
+ 
+
+</div>
+
+
+<div style="overflow-x:auto;">
+<table class="table " id="myTable">
+    <thead>
+                <tr>
+                    <th onclick="sortTable(0)">@Html.DisplayNameFor(model => model.ItemId)</th>
+                    <th onclick="sortTable(0)">@Html.DisplayNameFor(model => model.ItemName)  </th>
+                    <th onclick="sortTable(0)">@Html.DisplayNameFor(model => model.Amount)  </th>
+                    <th onclick="sortTable(0)">@Html.DisplayNameFor(model => model.ExpenseDate)  </th>
+                    <th onclick="sortTable(0)">@Html.DisplayNameFor(model => model.Category) </th>
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <th>Action Item</th>
+            }
+        </tr>
+            </thead>
+    <tbody  >
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@Html.DisplayFor(modelItem => item.ItemId)</td>
+                        <td>@Html.DisplayFor(modelItem => item.ItemName)</td>
+                        <td>@Html.DisplayFor(modelItem => item.Amount)</td>
+                        <td>@Html.DisplayFor(modelItem => item.ExpenseDate)</td>
+                        <td>@Html.DisplayFor(modelItem => item.Category)</td>
+                        @if (SignInManager.IsSignedIn(User)){
+                        <td>
+                            <button class="btn btn-sm btn-default" onclick="AddEditExpenses(@item.ItemId)">Edit</button>
+                            <button class="btn btn-sm btn-default text-danger" onclick="DeleteExpense(@item.ItemId)">Delete</button>
+                        </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+
+    </div>
+    <div class="modal fade" id="expenseFormModel" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="title" class="modal-title">Add Expense</h3>
+                    <a asp-controller="expense" asp-action="index" class="close" data-dismiss="modal">&times;</a>
+                </div>
+                <div class="modal-body" id="expenseFormModelDiv">
+                </div>
+            </div>
+        </div>
+    </div>
+  
+
+
+
+<div class="modal fade" id="expenseReportModal" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Expense Report</h3>
+                <a asp-controller ="expense" asp-action="index" class="close" data-dismiss="modal">
+                    &times;</a>
+            </div>
+            <div class="modal-body" id="expenseReportModalDiv">
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+<script>
+    $(document).ready(function () {
+        $("#myInput").on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("#myTable tr").filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+    });
+
+
+</script>
+<script>
+    function sortTable(n) {
+        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+        table = document.getElementById("myTable");
+        switching = true;
+        // Set the sorting direction to ascending:
+        dir = "asc";
+        /* Make a loop that will continue until
+        no switching has been done: */
+        while (switching) {
+            // Start by saying: no switching is done:
+            switching = false;
+            rows = table.rows;
+            /* Loop through all table rows (except the
+            first, which contains table headers): */
+            for (i = 1; i < (rows.length - 1); i++) {
+                // Start by saying there should be no switching:
+                shouldSwitch = false;
+                /* Get the two elements you want to compare,
+                one from current row and one from the next: */
+                x = rows[i].getElementsByTagName("TD")[n];
+                y = rows[i + 1].getElementsByTagName("TD")[n];
+                /* Check if the two rows should switch place,
+                based on the direction, asc or desc: */
+                if (dir == "asc") {
+                    if (Number(x.innerHTML.toLowerCase()) > Number(y.innerHTML.toLowerCase())) {
+                        // If so, mark as a switch and break the loop:
+                        shouldSwitch = true;
+                        break;
+                    }
+                } else if (dir == "desc") {
+                    if (Number(x.innerHTML.toLowerCase()) < Number(y.innerHTML.toLowerCase())) {
+                        // If so, mark as a switch and break the loop:
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+            }
+            if (shouldSwitch) {
+                /* If a switch has been marked, make the switch
+                and mark that a switch has been done: */
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+                // Each time a switch is done, increase this count by 1:
+                switchcount++;
+            } else {
+                /* If no switching has been done AND the direction is "asc",
+                set the direction to "desc" and run the while loop again. */
+                if (switchcount == 0 && dir == "asc") {
+                    dir = "desc";
+                    switching = true;
+                }
+            }
+        }
+    }
+</script>
+
+<script>
+
+    var AddEditExpenses = function (itemId) {
+        var url = "/Expense/AddEditExpenses?itemId=" + itemId;
+        if (itemId > 0)
+            $('#title').html("Edit Expense");
+
+        $("#expenseFormModelDiv").load(url, function () {
+            $("#expenseFormModel").modal("show");
+
+        });
+
+        $('#expenseFormModel').on('shown.bs.modal', function () {
+
+            $('#calender-container .input-group.date').datepicker({
+                todayBtn: true,
+                calendarWeeks: true,
+                todayHighlight: true,
+                autoclose: true,
+                container: '#expenseFormModel modal-body'
+            });
+
+        });
+    }
+
+    var ReportExpense = function () {
+        var url = "/Expense/ExpenseSummary";
+
+        $("#expenseReportModalDiv").load(url, function () {
+            $("#expenseReportModal").modal("show");
+        })
+    }
+
+    var DeleteExpense = function (itemId) {
+
+        var ans = confirm("Do you want to delete item with Item Id: " + itemId);
+
+        if (ans) {
+            $.ajax({
+                type: "POST",
+                url: "/Expense/Delete/" + itemId,
+                success: function () {
+                    window.location.href = "/Expense/Index";
+                }
+            })
+        }
+    }
+</script>
+
+<script>
+
+    $('body').on('click', "#btnSubmit", function () {
+        var myformdata = $("#expenseForm").serialize();
+
+        $.ajax({
+            type: "POST",
+            url: "/Expense/Create",
+            data: myformdata,
+            success: function () {
+                $("#myModal").modal("hide");
+                window.location.href = "/Expense/Index";
+            },
+            error: function (errormessage) {
+                alert(errormessage.responseText);
+            }
+        })
+    })
+</script>
